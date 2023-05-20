@@ -8,7 +8,7 @@ namespace Scrapper
 {
     class Driver
     {
-       
+
         static void Main(string[] args)
         {
 
@@ -21,10 +21,10 @@ namespace Scrapper
             Console.WriteLine("Press Enter Once Logged In");
             Console.ReadLine();
 
-           // Dictionary<string, string> loc_card = GetCardNum(driver);
+            // Dictionary<string, string> loc_card = GetCardNum(driver);
             Dictionary<string, string> cust_name = new Dictionary<string, string>();
 
-           // loc_card = loc_card.Keys.OrderBy(k => k).ToDictionary(Keys => Keys, k => loc_card[k]);//sort dictionary
+            // loc_card = loc_card.Keys.OrderBy(k => k).ToDictionary(Keys => Keys, k => loc_card[k]);//sort dictionary
 
             driver.Navigate().GoToUrl("https://user.petroleader.com/");//navigate to petroleader
 
@@ -33,17 +33,17 @@ namespace Scrapper
             driver.FindElement(By.XPath("/html/body/div[1]/section/div[1]/form/div/div[2]/div[4]/input")).SendKeys(password);//enter password
             driver.FindElement(By.XPath("/html/body/div[1]/section/div[1]/form/div/div[3]/input")).Click();//login
             Thread.Sleep(1000);
-            
+
             //GO TO PAGE
             driver.FindElement(By.XPath("/html/body/div[1]/section/div/div[1]/div/ul/li[3]/a")).Click();//navigate to transaction reports
             Thread.Sleep(10);
-                        
+
             /*SET DATE RANGE TO 7 DAYS*/
             driver.FindElement(By.XPath("/html/body/div[1]/section/form[1]/div/div/div/div[2]/div/div/div[1]/div[2]/span[1]/span/span/span")).Click();//open date range drop down
             Thread.Sleep(1000);
             driver.FindElement(By.XPath("/html/body/div[10]/div/div[2]/ul/li[4]")).Click();//select 7 days
 
-            
+
             SelectStation("Brooks", driver);
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(20));//Wait for table to populate
             wait.Until(driver => driver.FindElement(By.ClassName("k-grid-content")));
@@ -54,7 +54,7 @@ namespace Scrapper
 
             wait.Until(driver => driver.FindElement(By.ClassName("k-grid-content")));//wait for table to populate
 
-            var el = driver.FindElement(By.XPath("//*[text()='379550XXXXX7687=2702']"));//search for anything on the page that contains the card number
+            var el = driver.FindElement(By.XPath("//*[contains(text(),'556735XXXXXX5609')]"));//search for anything on the page that contains the card number !!!!TODO::
 
             var par = el.FindElement(By.XPath("./.."));//get that elements parent 
             var inputs = par.FindElements(By.TagName("input"));//get the children inputs
@@ -63,6 +63,29 @@ namespace Scrapper
             inputs[2].Click();//open detail page
 
             driver.FindElement(By.XPath("/html/body/div[20]/div[2]/div/div/ul/li[2]/a")).Click();
+
+
+            //1. Click Merchant Details /html/body/div[20]/div[2]/div/div/ul/li[2]/a
+            driver.FindElement(By.XPath("/html/body/div[20]/div[2]/div/div/ul/li[2]/a")).Click();
+
+            Thread.Sleep(2000);
+            IWebElement CustomerName;
+            try
+            {
+                CustomerName = driver.FindElement(By.XPath("//*[contains(text(),'CustomerName')]"));
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Couldn't find CusterName Element");
+                CustomerName = driver.FindElement(By.XPath("//*[contains(text(),'CUST')]"));
+            }
+           
+
+            //2b. get parent then all children[1] CUST
+            var MerDetails = CustomerName.FindElement(By.XPath("./.."));//get that elements parent 
+            var children = MerDetails.FindElements(By.TagName("td"));
+
+            Console.WriteLine(children[1].Text);
 
         }
 
@@ -80,7 +103,7 @@ namespace Scrapper
                     stationXPath = "/html/body/div[4]/div/div[2]/ul/li[1]";
                     break;
                 case "Hurricane":
-                    stationXPath = "/html/body/div[4]/div/div[2]/ul/li[2]"; 
+                    stationXPath = "/html/body/div[4]/div/div[2]/ul/li[2]";
                     break;
                 case "Idaho Falls":
                     stationXPath = "/html/body/div[4]/div/div[2]/ul/li[3]";
